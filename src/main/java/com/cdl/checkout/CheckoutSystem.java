@@ -1,30 +1,29 @@
-package org.example;
+package com.cdl.checkout;
 
+import java.sql.Array;
 import java.util.HashMap;
 import java.util.Map;
 
 public class CheckoutSystem {
 
-    // Map to hold the pricing rules
+
     private Map<String, PricingRule> pricingRules;
     private Map<String, Integer> cart;
 
-    // Constructor
     public CheckoutSystem(Map<String, PricingRule> pricingRules) {
         this.pricingRules = pricingRules;
         this.cart = new HashMap<>();
     }
 
-    // Method to scan an item
-    public void scan(String item) {
-        cart.put(item, cart.getOrDefault(item, 0) + 1);
-        System.out.println("Scanned: " + item);
+    public void scan(String item, int quantity) {
+
+        cart.put(item, cart.getOrDefault(item, 0) + quantity);
+        System.out.println("Scanned: " + quantity + " x " + item);
         System.out.println("Running Total: " + calculateTotal() + " pence");
     }
-
-    // Method to calculate total price
     public int calculateTotal() {
         int total = 0;
+        int itemsTotal = 0;
         for (String item : cart.keySet()) {
             int quantity = cart.get(item);
             PricingRule rule = pricingRules.get(item);
@@ -35,14 +34,17 @@ public class CheckoutSystem {
                 continue;
             }
 
-            if (rule != null && rule.getSpecialPrice() > 0 && rule.getSpecialQuantity() > 0) {
-                int specialSets = quantity / rule.getSpecialQuantity();
-                int remainder = quantity % rule.getSpecialQuantity();
-                total += specialSets * rule.getSpecialPrice() + remainder * rule.getUnitPrice();
+            if (rule.specialPrice() > 0 && rule.specialQuantity() > 0) {
+                int specialSets = quantity / rule.specialQuantity();
+                int remainder = quantity % rule.specialQuantity();
+                itemsTotal = specialSets * rule.specialPrice() + remainder * rule.unitPrice();
+                total += itemsTotal;
             } else {
-                total += quantity * rule.getUnitPrice();
+                itemsTotal = quantity * rule.unitPrice();
+                total += itemsTotal;
             }
         }
+
         return total;
     }
 }
