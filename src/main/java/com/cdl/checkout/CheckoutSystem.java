@@ -18,34 +18,44 @@ public class CheckoutSystem {
     public void scan(String item, int quantity) {
 
         cart.put(item, cart.getOrDefault(item, 0) + quantity);
-        System.out.println("Scanned: " + quantity + " x " + item);
+        System.out.println("Scanned: " + quantity + " x " + item + " is " + calculateItemTotal(item));
         System.out.println("Running Total: " + calculateTotal() + " pence");
     }
+
     public int calculateTotal() {
         int total = 0;
-        int itemsTotal = 0;
         for (String item : cart.keySet()) {
-            int quantity = cart.get(item);
-            PricingRule rule = pricingRules.get(item);
+            total += calculateItemTotal(item);
+        }
+        return total;
+    }
 
-            if (rule == null) {
-                // If the rule does not exist, skip this item
-                System.out.println("Warning: No pricing rule found for item '" + item + "'. Skipping.");
-                continue;
-            }
-
-            if (rule.specialPrice() > 0 && rule.specialQuantity() > 0) {
-                int specialSets = quantity / rule.specialQuantity();
-                int remainder = quantity % rule.specialQuantity();
-                itemsTotal = specialSets * rule.specialPrice() + remainder * rule.unitPrice();
-                total += itemsTotal;
-            } else {
-                itemsTotal = quantity * rule.unitPrice();
-                total += itemsTotal;
-            }
+    private int calculateItemTotal(String item) {
+        int itemsTotal = 0;
+        int quantity = cart.get(item);
+        PricingRule rule = pricingRules.get(item);
+        if (rule == null) {
+            // If the rule does not exist, skip this item
+            System.out.println("Warning: No pricing rule found for item '" + item + "'. Skipping.");
+            return 0;
         }
 
-        return total;
+        if (rule.specialPrice() > 0 && rule.specialQuantity() > 0) {
+            int specialSets = quantity / rule.specialQuantity();
+            int remainder = quantity % rule.specialQuantity();
+            itemsTotal = specialSets * rule.specialPrice() + remainder * rule.unitPrice();
+        } else {
+            itemsTotal = quantity * rule.unitPrice();
+        }
+        return itemsTotal;
+    }
+
+    public void displayCart() {
+        for (String item : cart.keySet()) {
+            int quantity = cart.get(item);
+            int total = calculateItemTotal(item);
+            System.out.println("Total for " + quantity + " X " + item + " : " + total + " pence ");
+        }
     }
 }
 
